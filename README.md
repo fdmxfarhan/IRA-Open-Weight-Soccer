@@ -3,6 +3,6 @@ This project is made to participate in Robocup Junior Soccer league.In this leag
 
 ### To use this code, copy and paste this command in a terminal
 ```
-| git clone https://github.com/fdmxfarhan/IRA-Open-Weight-Soccer.git
+> git clone https://github.com/fdmxfarhan/IRA-Open-Weight-Soccer.git
 ```
 ### You can read the main code in code/t1.c
