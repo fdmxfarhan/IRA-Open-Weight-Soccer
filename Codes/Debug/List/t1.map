@@ -1,0 +1,74 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+twi_tx_index                                                                      0x0160       1
+twi_rx_index                                                                      0x0161       1
+twi_result                                                                        0x0162       1
+y                                                                                 0x0163       2
+width                                                                             0x0165       2
+height                                                                            0x0167       2
+checksum                                                                          0x0169       2
+signature                                                                         0x016B       2
+a                                                                                 0x016D       1
+x_robot                                                                           0x016E       2
+y_robot                                                                           0x0170       2
+ball_angle                                                                        0x0172       2
+ball                                                                              0x0174       2
+ball_distance                                                                     0x0176       2
+is_ball                                                                           0x0178       1
+address                                                                           0x0179       2
+slave_address                                                                     0x017B       1
+twi_tx_buffer                                                                     0x017C       2
+bytes_to_tx                                                                       0x017E       1
+twi_rx_buffer                                                                     0x017F       2
+bytes_to_rx                                                                       0x0181       1
+twi_rx_buffer_size                                                                0x0182       1
+twi_slave_rx_handler                                                              0x0183       2
+twi_slave_tx_handler                                                              0x0185       2
+_base_y                                                                           0x0187       4
+_lcd_x                                                                            0x018B       1
+_lcd_y                                                                            0x018C       1
+_lcd_maxx                                                                         0x018D       1
+_seed                                                                             0x018E       4
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+speed                                                                             R4,R5        2
+i                                                                                 R6,R7        2
+cmp                                                                               R8,R9        2
+c                                                                                 R10,R11      2
+x                                                                                 R12,R13      2
+twi_flag                                                                          R2.0      1bit
+twi_ready                                                                         R2.1      1bit
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+read                                                                              0x00083     22
+compass_read                                                                      0x00099     17
+readcmp                                                                           0x000AA     85
+motor                                                                             0x000FF    168
+move                                                                              0x001A7    215
+read_pixy                                                                         0x0027E    350
+main                                                                              0x003DC    271
+ftrunc                                                                            0x004EB     49
+floor                                                                             0x0051C     16
+log                                                                               0x0052C    130
+exp                                                                               0x005AE    154
+pow                                                                               0x00648     75
+xatan                                                                             0x00693     43
+yatan                                                                             0x006BE     61
+atan2                                                                             0x006FB     89
+twi_int_handler                                                                   0x00754    357
+_lcd_write_nibble_G102                                                            0x008B9     20
+_lcd_write_data                                                                   0x008CD     12
+lcd_gotoxy                                                                        0x008D9     17
+lcd_clear                                                                         0x008EA     14
+lcd_putchar                                                                       0x008F8     32
+lcd_putsf                                                                         0x00918     19
+lcd_init                                                                          0x0092B     47
