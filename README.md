@@ -6,4 +6,4 @@ This project is made to participate in Robocup Junior Soccer league.In this leag
 git clone https://github.com/fdmxfarhan/IRA-Open-Weight-Soccer.git
 ```
 ### IRA Open weight robot
-![ ](./pic.png) ![ ](./pic.png)
+![ ](./pic.png)      ![ ](./pic.png)
