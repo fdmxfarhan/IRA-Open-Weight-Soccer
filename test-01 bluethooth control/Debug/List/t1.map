@@ -1,0 +1,47 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+cmp_3                                                                             0x0160       2
+c                                                                                 0x0162       2
+flag1                                                                             0x0164       2
+last_l1                                                                           0x0166       2
+last_l2                                                                           0x0168       2
+last_r1                                                                           0x016A       2
+last_r2                                                                           0x016C       2
+rx_buffer                                                                         0x016E       8
+rx_wr_index                                                                       0x0176       1
+rx_rd_index                                                                       0x0177       1
+rx_counter                                                                        0x0178       1
+_base_y                                                                           0x0179       4
+_lcd_x                                                                            0x017D       1
+_lcd_y                                                                            0x017E       1
+_lcd_maxx                                                                         0x017F       1
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+v                                                                                 R4,R5        2
+a                                                                                 R6,R7        2
+cmp                                                                               R8,R9        2
+cmp_1                                                                             R10,R11      2
+cmp_2                                                                             R12,R13      2
+rx_buffer_overflow                                                                R2.0      1bit
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+usart_rx_isr                                                                      0x0006D     49
+getchar                                                                           0x0009E     32
+motor                                                                             0x000BE    184
+shoot                                                                             0x00176      7
+main                                                                              0x0017D    416
+_lcd_write_nibble_G100                                                            0x0031D     20
+_lcd_write_data                                                                   0x00331     12
+lcd_gotoxy                                                                        0x0033D     17
+lcd_clear                                                                         0x0034E     14
+lcd_putchar                                                                       0x0035C     31
+lcd_init                                                                          0x0037B     47
