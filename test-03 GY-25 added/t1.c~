@@ -126,15 +126,17 @@ return ADCW;
 ///////////////////////////////////////////////////////////////////vars
 int speed = 255;
 int i;
-int cmp,c=0;
+int cmp;
 int x, y,width,height,checksum, signature;
 char a,b;
-int x_robot = 150, y_robot = 100, ball_angle, ball, ball_distance;
+int x_robot = 150, y_robot = 109, ball_angle, ball, ball_distance;
 int x_goal, y_goal, goal_angle, goal_distance, goal,is_goal = 0,cnt=0,cmp_balance = 0;
-
+int front_distance,back_distance;
 int kick_sen;
 int is_ball = 0;
-
+int turn_back = 0;
+int LDR_R,LDR_L,set_r,set_l,last_out = 'L',once_done = 0;
+int out_cnt = 0;
 //////////////////////////////////////////////////////////////////////////////////PIXY-CMUCAM5
 #define I2C_7BIT_DEVICE_ADDRESS 0x54
 #define EEPROM_BUS_ADDRESS (I2C_7BIT_DEVICE_ADDRESS << 1)
@@ -153,38 +155,56 @@ data=i2c_read(0);
 i2c_stop();
 return data;
 }
-//////////////////////////////////////////////////////////////////////////////////CMP-READ
-#define EEPROM_BUS_ADDRES 0xc0
-/* read/ a byte from the EEPROM */
-unsigned char compass_read(unsigned char addres)
-    {
-    unsigned char data;
-    i2c_start();
-    i2c_write(EEPROM_BUS_ADDRES);
-    i2c_write(addres);
-    i2c_start();
-    i2c_write(EEPROM_BUS_ADDRES | 1);
-    data=i2c_read(0);
-    i2c_stop();
-    return data;
-    }
 
-void print(int var)
+void print()
     {
-    if(var>=0)
-        {                             
-        lcd_putchar('+');
-        lcd_putchar((var/100)%10+'0');
-        lcd_putchar((var/10)%10+'0');
-        lcd_putchar((var/1)%10+'0'); 
-        }
-    else
-        {                             
-        lcd_putchar('-');
-        lcd_putchar((-var/100)%10+'0');
-        lcd_putchar((-var/10)%10+'0');
-        lcd_putchar((-var/1)%10+'0'); 
-        }
+//    lcd_gotoxy(0,0);
+//    lcd_putchar('B');
+//    lcd_putchar((ball/10)%10+'0');
+//    lcd_putchar((ball/1)%10+'0');
+//    
+//    
+//    lcd_gotoxy(5,0);
+//    lcd_putchar((ball_distance/100)%10+'0');
+//    lcd_putchar((ball_distance/10)%10+'0');
+//    lcd_putchar((ball_distance/1)%10+'0');
+//    
+    
+    lcd_gotoxy(0,0);
+    lcd_putsf("X=");
+    lcd_putchar((x/100)%10+'0');
+    lcd_putchar((x/10)%10+'0');
+    lcd_putchar((x/1)%10+'0');
+
+    lcd_gotoxy(5,0);
+    lcd_putsf("Y=");
+    lcd_putchar((y/100)%10+'0');
+    lcd_putchar((y/10)%10+'0');
+    lcd_putchar((y/1)%10+'0');
+    
+//    lcd_gotoxy(0,1);
+//    lcd_putchar((LDR_L/100)%10+'0');
+//    lcd_putchar((LDR_L/10)%10+'0');
+//    lcd_putchar((LDR_L/1)%10+'0');
+//    
+//    lcd_gotoxy(4,1);
+//    lcd_putchar((LDR_R/100)%10+'0');
+//    lcd_putchar((LDR_R/10)%10+'0');
+//    lcd_putchar((LDR_R/1)%10+'0');
+    
+    lcd_gotoxy(0,1);
+    lcd_putchar((front_distance/100)%10+'0');
+    lcd_putchar((front_distance/10)%10+'0');
+    lcd_putchar((front_distance/1)%10+'0');
+    
+    lcd_gotoxy(4,1);
+    lcd_putchar((back_distance/100)%10+'0');
+    lcd_putchar((back_distance/10)%10+'0');
+    lcd_putchar((back_distance/1)%10+'0');
+    
+    
+
+    
     }
 
 void motor(int mr1,int mr2,int ml2,int ml1)
@@ -293,13 +313,12 @@ void read_pixy()
         }
       } 
     if(a != 0 && signature == 1) is_ball = 1;     
-    else if(a != 0 && signature == 2) {is_goal = 1; is_ball = 0;}
+    else if(a != 0 && signature == 2) {is_goal = 1; is_ball = 0;} 
     else 
         {
         is_ball = 0;
         is_goal = 0;     
         }
-                       
     ball_angle = atan2(y - y_robot, x - x_robot) * 180 / PI;
     if (ball_angle < 0) ball_angle += 360;
     ball_angle = 360 - ball_angle;
@@ -324,29 +343,6 @@ void read_pixy()
             goal = i + 1;
         }                         
     goal_distance = sqrt(pow(x_goal-(x_robot) , 2) + pow(y_goal-y_robot, 2)); 
-
-    lcd_gotoxy(0,0);
-    lcd_putchar('B');
-    lcd_putchar((ball/10)%10+'0');
-    lcd_putchar((ball/1)%10+'0');
-    
-    lcd_gotoxy(5,0);
-    lcd_putchar('G');
-    lcd_putchar((goal/10)%10+'0');
-    lcd_putchar((goal/1)%10+'0');
-    
-    
-//    lcd_gotoxy(0,0);
-//    lcd_putsf("X=");
-//    lcd_putchar((x/100)%10+'0');
-//    lcd_putchar((x/10)%10+'0');
-//    lcd_putchar((x/1)%10+'0');
-//
-//    lcd_gotoxy(5,0);
-//    lcd_putsf("Y=");
-//    lcd_putchar((y/100)%10+'0');
-//    lcd_putchar((y/10)%10+'0');
-//    lcd_putchar((y/1)%10+'0');
     } 
 
 void move(int direction)
@@ -371,8 +367,9 @@ void move(int direction)
     if(direction == 15)     motor(speed/2  , speed   , -speed/2, -speed  );        
     }
 
-void read_cmp()
-    {
+void read_sensor()
+    {                     
+    //--------------GY-25 Compass read
     putchar(0xa5);
     putchar(0x52);
     b = getchar();
@@ -381,18 +378,142 @@ void read_cmp()
     cnt++;
     if(cmp > 128) cmp = cmp - 255;      
     lcd_gotoxy(0,1);
-    print(cmp);   
     if(cmp<30 && cmp>-30) cmp*=2;
+    if(turn_back)
+        {
+        if(cmp >=0) cmp = -(128 - cmp);
+        else        cmp = cmp + 128;
+        }
+    //--------------Front Distance
+    DDRA.6=1;
+    PORTA.6=1;
+    delay_us(10);
+    PORTA.6=0;
+    back_distance=0;  
+    DDRA.6=0;
+    while(PINA.6==0);
+    while(PINA.6==1)
+        {
+        back_distance++;
+        delay_us(1);
+        }
+    back_distance/=22;
+    //--------------Back Distance
+    DDRA.7=1;
+    PORTA.7=1;
+    delay_us(10);
+    PORTA.7=0;
+    front_distance=0;  
+    DDRA.7=0;
+    while(PINA.7==0);
+    while(PINA.7==1)
+        {
+        front_distance++;
+        delay_us(1);
+        }
+    front_distance/=22;
+    //--------------Kicker Sensor
+    kick_sen = read_adc(0);     
+    //--------------LDR read
+    LDR_L = read_adc(3) - set_l;
+    LDR_R = read_adc(2) - set_r;
     }
 
 void shoot()
     {
     PORTC.3 = 1;
     delay_ms(100);
-    PORTC.3 = 0;  
-    
+    PORTC.3 = 0;
     }           
- 
+
+void out()
+    {
+//    speed = 150;
+    if(LDR_L>60)
+        {
+        last_out = 'L';  
+        cmp = 0;
+        move(4);
+        delay_ms(200);
+        out_cnt = 0;  
+        while((ball>8 || ball == 0) && is_ball && out_cnt<20)
+            {
+            read_sensor();
+            read_pixy();
+            if(LDR_R>60 && LDR_L>60) move(4);  
+            else motor(0,0,0,0);
+            out_cnt++;
+            }
+        while(is_ball)
+            {         
+            PORTB.4 = 1;  
+            read_sensor();
+            read_pixy();
+            cmp = 0;                           
+            speed = 100;
+            if(kick_sen < 400)
+                {     
+                speed = 150;
+                for(i = 0; i<50; i++)
+                    {
+                    read_sensor();
+                    move(6);
+                    }
+                return;
+                }
+            else if(ball != 0)
+                {
+                if(ball>=8)      motor(-50,-50,-50,-50);
+                else if(ball<8) motor(50,50,50,50);
+                }
+            else if(front_distance>13) move(0);
+            else motor(0,0,0,0);
+            }
+        }         
+    else if(LDR_R>60)
+        {
+        last_out = 'R';  
+        cmp = 0;
+        move(12);
+        delay_ms(200);
+        out_cnt = 0;  
+        while(ball<8 && is_ball && out_cnt<20)
+            {
+            read_sensor();
+            read_pixy();
+            if(LDR_L>60 || LDR_R>60) move(12);                       
+            else motor(0,0,0,0);
+            out_cnt++;
+            }
+        while(is_ball)
+            {         
+            PORTB.4 = 1;  
+            read_sensor();
+            read_pixy();
+            cmp = 0;                           
+            speed = 100;
+            if(kick_sen < 400)
+                {     
+                speed = 150;
+                for(i = 0; i<50; i++)
+                    {
+                    read_sensor();
+                    move(10);
+                    }
+                return;
+                }
+            else if(ball != 0)
+                {
+                if(ball>=8)      motor(-50,-50,-50,-50);
+                else if(ball<8) motor(50,50,50,50);
+                }
+            else if(front_distance>13) move(0);
+            else motor(0,0,0,0);
+            }
+        }
+//    speed = 255;            
+    }
+
 void main(void)
 {
 // Declare your local variables here
@@ -544,24 +665,49 @@ lcd_init(16);
 // Global enable interrupts
 #asm("sei")
 speed = 255;
+set_l = read_adc(3);
+set_r = read_adc(2);
+
 read_pixy();
 while(x == 0 && y == 0) read_pixy();
 while (1)
     {
     read_pixy(); 
-    read_cmp();
-    kick_sen = read_adc(0);     
-    lcd_gotoxy(5,1);
-    lcd_putchar((kick_sen/1000)%10+'10');
-    lcd_putchar((kick_sen/100)%10+'10');
-    lcd_putchar((kick_sen/10)%10+'10');
-    lcd_putchar((kick_sen/1)%10+'10');
+    read_sensor();
+    print();   
     if(kick_sen<400)
         {                        
         PORTB.4 = 1;
-        if(!is_goal)  motor(-150,-150,150,150);      
-        else if(goal_distance<70)    
+        speed = 255;
+        if(!is_goal && turn_back == 0)  move(0);
+        else if(!is_goal && turn_back == 1)  move(8);
+        else if(front_distance < 10 && !turn_back)
             { 
+            turn_back = 1;
+            move(8);
+            if(last_out == 'L')
+                {
+                for(i = 0; i < 100; i++) 
+                    {
+                    read_sensor();
+                    if(kick_sen>400) {break;turn_back = 0;}
+                    motor(-200,-200,-50,0);
+                    }
+                }
+            else
+                {
+                for(i = 0; i < 100; i++) 
+                    {
+                    read_sensor();
+                    if(kick_sen>400) {break;turn_back = 0;}
+                    motor(0,50,200,200);
+                    }
+                }
+            
+            }          
+        else if(back_distance < 20 && turn_back && goal_distance>70)  move(4);
+        else if(goal_distance<90)
+            {
             cmp = 0;
             if(goal == 0) {motor(-cmp,-cmp,-cmp,-cmp);shoot();}
             else if(goal>3 && goal < 8)   motor(120,120,120,120);
@@ -571,21 +717,32 @@ while (1)
             }               
         else 
             {
-            speed = 150;
+            speed = 200;
             move(goal); 
             speed = 255;
             }
         }
     else if(is_ball)
-        {  
-        if(ball_distance < 90) 
+        {   
+        out();       
+        speed = 255;                
+        if(ball_distance <40)
+            {               
+            PORTB.4 = 1;
+            if(ball == 0)       move(ball);
+            else if(ball < 2)   move(ball+1);
+            else if(ball > 14)  move(ball-1);
+            else if(ball <= 8)  move(ball+3);
+            else if(ball > 8)   move(ball-3);
+            }
+        else if(ball_distance < 90) 
             {               
             PORTB.4 = 1;
             if(ball == 0)       move(ball);
             else if(ball == 1)  move(1);
             else if(ball == 15) move(15);
-            else if(ball == 2)  move(4);
-            else if(ball == 14) move(12);
+            else if(ball == 2)  move(3);
+            else if(ball == 14) move(13);
 
             else if(ball>2 && ball<=6)    move(ball + 2);
             else if(ball>=10 && ball<14)  move(ball - 2);
@@ -596,13 +753,17 @@ while (1)
         else
             {           
             PORTB.4 = 0;
-            move(ball);
+            if(ball == 0 )      move(ball);
+            else if(ball<=8)    move(ball+2);
+            else if(ball>8)     move(ball-2);
             }       
         }
     else 
-        {
+        {    
+        turn_back = 0;
         PORTB.4 = 0;
-        motor(0,0,0,0);
+        if(back_distance > 30) move(8);
+        else motor(0,0,0,0);
         }    
     }
 }
